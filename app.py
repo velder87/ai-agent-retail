@@ -39,7 +39,7 @@ def get_engine():
     }.items() if not v]
     if missing:
         raise HTTPException(status_code=500, detail=f"DB not configured. Missing env vars: {', '.join(missing)}")
-    sql_url = f"mssql+pytds://{AZ_SQL_USER}:{AZ_SQL_PASSWORD}@{AZ_SQL_SERVER}:1433/{AZ_SQL_DB}?encrypt=yes"
+    sql_url = f"mssql+pymssql://{AZ_SQL_USER}:{AZ_SQL_PASSWORD}@{AZ_SQL_SERVER}:1433/{AZ_SQL_DB}?charset=utf8"
     _engine = create_engine(
         sql_url,
         pool_pre_ping=True,
