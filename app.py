@@ -1,5 +1,4 @@
 import os
-import sqlalchemy_tds
 from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
