@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+from fastapi import Body
+from fastapi.responses import JSONResponse
 
 # ------------------ Config ------------------
 AZ_SQL_SERVER   = os.getenv("AZ_SQL_SERVER")
@@ -71,13 +73,25 @@ def tool_sql(query: str) -> Dict[str, Any]:
     try:
         eng = get_engine()
         with eng.begin() as conn:
-            rows = conn.execute(text(query)).fetchall()
-            cols = rows[0].keys() if rows else []
-        return {"columns": list(cols), "rows": [list(r) for r in rows]}
+            result = conn.execute(text(query))
+            cols = list(result.keys())           # ✅ récupère les colonnes sur Result
+            rows = result.fetchall()             # puis récupère les lignes
+        return {"columns": cols, "rows": [list(r) for r in rows]}
     except HTTPException:
         raise
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=f"SQL error: {str(e)}") from e
+
+@app.post("/sql_table")
+def run_sql_table(payload: dict = Body(...)):
+    query = payload.get("query")
+    if not query or not isinstance(query, str):
+        raise HTTPException(status_code=400, detail="Body must contain 'query' as string.")
+    data = tool_sql(query)  # {"columns":[...], "rows":[[...], ...]}
+    cols = data["columns"]
+    out = [{cols[i]: row[i] for i in range(len(cols))} for row in data["rows"]]
+    return JSONResponse(content=out, media_type="application/json")
+    
 
 # ------------------ Forecast (sklearn en lazy) ------------------
 def _calendar_features(dts):
