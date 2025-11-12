@@ -3,6 +3,7 @@ uvicorn==0.30.6
 pydantic==2.9.2
 SQLAlchemy==2.0.36
 python-tds==1.13.0
+sqlalchemy-tds==0.4.0
 pandas==2.2.2
 numpy==1.26.4
 scikit-learn==1.5.2
